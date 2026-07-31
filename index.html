@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Novabank · Digital Banking</title>
+  <!-- Tailwind via CDN + custom glassmorphism style -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome 6 (free) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Google Font (Inter) -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    .glass {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 8px 32px rgba(0, 20, 50, 0.1);
+    }
+    .glass-dark {
+      background: rgba(10, 20, 40, 0.4);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 215, 0, 0.2);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    .gold-gradient {
+      background: linear-gradient(135deg, #f6d365 0%, #fda085 100%);
+    }
+    .blue-gold-gradient {
+      background: linear-gradient(145deg, #0a2a5e, #1e4b7a, #c9a84c);
+    }
+    .card-shine {
+      background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.3) 0%, transparent 60%);
+    }
+    .btn-gold {
+      background: linear-gradient(145deg, #e4b83a, #b8860b);
+      color: white;
+      transition: all 0.2s;
+    }
+    .btn-gold:hover {
+      transform: scale(1.02);
+      box-shadow: 0 10px 25px -8px #b8860b;
+    }
+    .sidebar-item {
+      transition: all 0.2s;
+      border-left: 4px solid transparent;
+    }
+    .sidebar-item:hover {
+      background: rgba(255, 215, 0, 0.08);
+      border-left-color: #d4af37;
+    }
+    .sidebar-item.active {
+      background: rgba(255, 215, 0, 0.12);
+      border-left-color: #d4af37;
+    }
+    .fade-in {
+      animation: fadeIn 0.6s ease forwards;
+    }
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(12px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+    .confetti-piece {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      background: gold;
+      border-radius: 2px;
+      animation: confettiFall linear forwards;
+      pointer-events: none;
+      z-index: 9999;
+    }
+    @keyframes confettiFall {
+      0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+    /* mobile responsive */
+    @media (max-width: 640px) {
+      .sidebar { width: 100%; height: auto; position: relative; }
+      .dashboard-grid { grid-template-columns: 1fr; }
+    }
+    /* scroll */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #d4af37; border-radius: 12px; }
+    /* Novabank brand color */
+    .brand-bg { background: #0b1f3a; }
+    .brand-gold { color: #d4af37; }
+    .brand-border { border-color: #d4af37; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <!-- React & ReactDOM & other deps from CDN -->
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <!-- Axios for API calls -->
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <!-- For demo purpose we use a simple state manager, but in real app use context/redux -->
+  <script>
+    // ================== FAKE BACKEND / FIREBASE MOCK (for demo) ==================
+    // In production, this would be replaced with real Firebase + Node/Express APIs.
+    // But we simulate a complete banking experience with local state.
+    const MockDB = {
+      users: [
+        { id: '1', firstName: 'James', lastName: 'Carter', email: 'james@novabank.com', password: 'Password123!', phone: '+1 234 567 890', kycVerified: true, balance: 24500.75, savings: 8200, current: 4500, fixed: 15000, investment: 6800, avatar: 'https://randomuser.me/api/portraits/men/32.jpg', lastLogin: '2026-07-30 14:23:10', notifications: 3, currency: 'USD' },
+        { id: '2', firstName: 'Admin', lastName: 'Novabank', email: 'admin@novabank.com', password: 'AdminPass123!', role: 'admin', kycVerified: true, balance: 0 }
+      ],
+      transactions: [
+        { id: 't1', date: '2026-07-31', description: 'Starbucks', amount: -12.50, type: 'debit' },
+        { id: 't2', date: '2026-07-30', description: 'Salary Deposit', amount: 4200.00, type: 'credit' },
+        { id: 't3', date: '2026-07-29', description: 'Transfer to John', amount: -200.00, type: 'debit' },
+        { id: 't4', date: '2026-07-28', description: 'Dividend Income', amount: 150.25, type: 'credit' }
+      ],
+      loans: [],
+      cards: [{ id: 'c1', last4: '3456', type: 'Visa', frozen: false }]
+    };
+    // Current session
+    let currentUser = null;
+    let sessionToken = null;
+
+    // Simple auth mock
+    function mockLogin(email, password) {
+      const user = MockDB.users.find(u => u.email === email && u.password === password);
+      if (user) {
+        currentUser = { ...user };
+        sessionToken = 'mock-jwt-token';
+        return { success: true, user: currentUser };
+      }
+      return { success: false, message: 'Invalid credentials' };
+    }
+    function mockLogout() { currentUser = null; sessionToken = null; }
+
+    // ---------- React APP ----------
+    const { useState, useEffect, useRef, useCallback, createContext, useContext } = React;
+
+    // Context for global state
+    const AppContext = createContext(null);
+
+    // Main App
+    function App() {
+      const [user, setUser] = useState(null);
+      const [loading, setLoading] = useState(true);
+      const [showWelcome, setShowWelcome] = useState(false);
+      const [welcomeData, setWelcomeData] = useState(null);
+      const [darkMode, setDarkMode] = useState(false);
+      const [page, setPage] = useState('dashboard'); // public: home, login, register, dashboard, admin
+
+      useEffect(() => {
+        // simulate auto-login from session
+        const saved = localStorage.getItem('novabank_session');
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            if (parsed && parsed.email) {
+              const found = MockDB.users.find(u => u.email === parsed.email);
+              if (found) {
+                setUser(found);
+                setPage('dashboard');
+                // show welcome after login
+                setTimeout(() => triggerWelcome(found), 400);
+              }
+            }
+          } catch(e) {}
+        }
+        setLoading(false);
+      }, []);
+
+      const triggerWelcome = (usr) => {
+        const now = new Date();
+        const last = usr.lastLogin || '2026-07-30 10:00';
+        setWelcomeData({
+          firstName: usr.firstName,
+          photo: usr.avatar || 'https://ui-avatars.com/api/?name='+usr.firstName+'+'+usr.lastName+'&background=0b1f3a&color=d4af37',
+          date: now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }),
+          time: now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+          lastLogin: last,
+          balance: usr.balance || 0,
+          unread: usr.notifications || 0,
+        });
+        setShowWelcome(true);
+        // confetti effect
+        for (let i = 0; i < 40; i++) {
+          setTimeout(() => {
+            const el = document.createElement('div');
+            el.className = 'confetti-piece';
+            el.style.left = Math.random() * 100 + 'vw';
+            el.style.background = ['#d4af37', '#f6d365', '#b8860b', '#0b1f3a', '#ffffff'][Math.floor(Math.random()*5)];
+            el.style.width = (Math.random()*8+4)+'px';
+            el.style.height = (Math.random()*8+4)+'px';
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 3000);
+          }, i*50);
+        }
+        setTimeout(() => setShowWelcome(false), 6000);
+      };
+
+      const handleLogin = (email, pass) => {
+        const res = mockLogin(email, pass);
+        if (res.success) {
+          setUser(res.user);
+          localStorage.setItem('novabank_session', JSON.stringify({ email: res.user.email }));
+          setPage('dashboard');
+          triggerWelcome(res.user);
+        } else {
+          alert('Login failed: '+res.message);
+        }
+      };
+
+      const handleLogout = () => {
+        mockLogout();
+        localStorage.removeItem('novabank_session');
+        setUser(null);
+        setPage('home');
+      };
+
+      if (loading) return <div className="min-h-screen flex items-center justify-center bg-[#0b1f3a]"><i className="fas fa-spinner fa-spin text-4xl text-[#d4af37]"></i></div>;
+
+      // Public pages
+      if (!user) {
+        if (page === 'login') return <LoginPage onLogin={handleLogin} goHome={()=>setPage('home')} />;
+        if (page === 'register') return <RegisterPage goLogin={()=>setPage('login')} />;
+        return <HomePage goLogin={()=>setPage('login')} goRegister={()=>setPage('register')} />;
+      }
+
+      // Logged in
+      return (
+        <AppContext.Provider value={{ user, setUser, darkMode, setDarkMode, logout: handleLogout }}>
+          <div className={`min-h-screen ${darkMode ? 'bg-[#0a1428] text-white' : 'bg-[#f0f4fe] text-[#0b1f3a]'} flex`}>
+            {/* Sidebar */}
+            <Sidebar user={user} setPage={setPage} page={page} />
+            <div className="flex-1 flex flex-col min-h-screen">
+              <TopBar user={user} setPage={setPage} page={page} />
+              <main className="flex-1 p-4 md:p-6 overflow-y-auto">
+                {page === 'dashboard' && <Dashboard user={user} />}
+                {page === 'send' && <SendMoney user={user} />}
+                {page === 'cards' && <Cards user={user} />}
+                {page === 'transactions' && <Transactions user={user} />}
+                {page === 'profile' && <Profile user={user} />}
+                {page === 'admin' && user.role === 'admin' && <AdminPanel user={user} />}
+                {page === 'loans' && <Loans user={user} />}
+                {page === 'investments' && <Investments user={user} />}
+                {page === 'beneficiaries' && <Beneficiaries user={user} />}
+                {page === 'statements' && <Statements user={user} />}
+                {page === 'support' && <Support user={user} />}
+                {page === 'settings' && <Settings user={user} />}
+                {!['dashboard','send','cards','transactions','profile','admin','loans','investments','beneficiaries','statements','support','settings'].includes(page) && <div className="p-10 text-center"><i className="fas fa-construction text-4xl text-[#d4af37]"></i><p className="mt-4">Page coming soon</p></div>}
+              </main>
+            </div>
+            {/* Welcome Popup */}
+            {showWelcome && welcomeData && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm fade-in">
+                <div className="glass max-w-lg w-full p-8 rounded-3xl shadow-2xl border border-white/30 text-center relative">
+                  <div className="absolute -top-4 -right-4"><i className="fas fa-crown text-3xl text-[#d4af37]"></i></div>
+                  <img src={welcomeData.photo} className="w-24 h-24 rounded-full mx-auto border-4 border-[#d4af37] shadow-lg" />
+                  <h2 className="text-2xl font-bold mt-4">👋 Welcome Back, {welcomeData.firstName}!</h2>
+                  <p className="text-sm opacity-80">Welcome to Novabank. We are happy to see you again. Your account is secure and ready to use.</p>
+                  <div className="grid grid-cols-2 gap-3 mt-4 text-sm bg-white/10 p-3 rounded-xl">
+                    <div><i className="far fa-calendar"></i> {welcomeData.date}</div>
+                    <div><i className="far fa-clock"></i> {welcomeData.time}</div>
+                    <div><i className="fas fa-history"></i> Last login: {welcomeData.lastLogin}</div>
+                    <div><i className="fas fa-wallet"></i> Balance: ${welcomeData.balance.toFixed(2)}</div>
+                  </div>
+                  <div className="mt-4 flex justify-between items-center">
+                    <span><i className="fas fa-bell text-[#d4af37]"></i> {welcomeData.unread} unread</span>
+                    <button onClick={()=>setShowWelcome(false)} className="btn-gold px-6 py-2 rounded-full text-sm font-semibold">Continue to Dashboard <i className="fas fa-arrow-right ml-1"></i></button>
+                  </div>
+                  <button onClick={()=>setShowWelcome(false)} className="absolute top-2 right-4 text-white/60 hover:text-white"><i className="fas fa-times"></i></button>
+                </div>
+              </div>
+            )}
+          </div>
+        </AppContext.Provider>
+      );
+    }
+
+    // ---------- Components ----------
+    function Sidebar({ user, setPage, page }) {
+      const [collapsed, setCollapsed] = useState(false);
+      const items = [
+        { id: 'dashboard', icon: 'fa-gauge-high', label: 'Dashboard' },
+        { id: 'send', icon: 'fa-paper-plane', label: 'Send Money' },
+        { id: 'cards', icon: 'fa-credit-card', label: 'Cards' },
+        { id: 'transactions', icon: 'fa-arrows-spin', label: 'Transactions' },
+        { id: 'loans', icon: 'fa-hand-holding-dollar', label: 'Loans' },
+        { id: 'investments', icon: 'fa-chart-line', label: 'Investments' },
+        { id: 'beneficiaries', icon: 'fa-users', label: 'Beneficiaries' },
+        { id: 'statements', icon: 'fa-file-pdf', label: 'Statements' },
+        { id: 'support', icon: 'fa-headset', label: 'Support' },
+        { id: 'settings', icon: 'fa-gear', label: 'Settings' },
+      ];
+      if (user.role === 'admin') items.push({ id: 'admin', icon: 'fa-shield', label: 'Admin' });
+
+      return (
+        <div className={`sidebar ${collapsed ? 'w-20' : 'w-64'} brand-bg text-white h-screen sticky top-0 overflow-y-auto transition-all duration-300 shadow-xl z-20`}>
+          <div className="p-4 flex items-center justify-between border-b border-white/10">
+            {!collapsed && <span className="text-xl font-bold tracking-wider"><i className="fas fa-rocket text-[#d4af37] mr-2"></i>Novabank</span>}
+            <button onClick={()=>setCollapsed(!collapsed)} className="text-white/60 hover:text-white"><i className={`fas ${collapsed ? 'fa-chevron-right' : 'fa-chevron-left'}`}></i></button>
+          </div>
+          <div className="py-4">
+            {items.map(item => (
+              <div key={item.id} onClick={()=>setPage(item.id)} className={`sidebar-item ${page===item.id?'active':''} px-4 py-3 cursor-pointer flex items-center gap-3 ${collapsed?'justify-center':''}`}>
+                <i className={`fas ${item.icon} w-6 text-[#d4af37]`}></i>
+                {!collapsed && <span>{item.label}</span>}
+              </div>
+            ))}
+          </div>
+          <div className="absolute bottom-0 w-full p-4 border-t border-white/10">
+            <div className={`flex items-center ${collapsed?'justify-center':''} gap-3`}>
+              <img src={user.avatar || 'https://ui-avatars.com/api/?name='+user.firstName+'+'+user.lastName+'&background=d4af37&color=fff'} className="w-8 h-8 rounded-full" />
+              {!collapsed && <div className="text-sm"><p className="font-semibold">{user.firstName} {user.lastName}</p><p className="text-xs opacity-60">{user.email}</p></div>}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function TopBar({ user, setPage, page }) {
+      const { darkMode, setDarkMode, logout } = useContext(AppContext);
+      return (
+        <div className={`p-4 flex items-center justify-between border-b ${darkMode?'border-white/10':'border-gray-200'} bg-opacity-80 backdrop-blur-sm sticky top-0 z-10`}>
+          <div className="flex items-center gap-3">
+            <span className="text-xl font-bold md:hidden"><i className="fas fa-rocket text-[#d4af37]"></i> Novabank</span>
+            <span className="hidden md:block text-sm">Good {new Date().getHours()<12?'Morning':new Date().getHours()<17?'Afternoon':'Evening'}, {user.firstName}</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <i className="fas fa-search text-gray-400"></i>
+              <input type="text" placeholder="Search..." className="hidden md:inline-block bg-transparent border-b border-gray-300 focus:border-[#d4af37] outline-none px-2 py-1 text-sm" />
+            </div>
+            <button className="relative"><i className="fas fa-bell text-xl"></i><span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">3</span></button>
+            <button onClick={()=>setDarkMode(!darkMode)}><i className={`fas ${darkMode?'fa-sun':'fa-moon'} text-xl`}></i></button>
+            <button onClick={logout} className="text-sm bg-red-500/20 px-3 py-1 rounded-full hover:bg-red-500/30"><i className="fas fa-sign-out-alt"></i> <span className="hidden md:inline">Logout</span></button>
+          </div>
+        </div>
+      );
+    }
+
+    // ---------- Dashboard ----------
+    function Dashboard({ user }) {
+      const now = new Date();
+      const hour = now.getHours();
+      let greeting = '';
+      let icon = '';
+      if (hour < 12) { greeting = 'Good Morning'; icon = '☀️'; } else if (hour < 17) { greeting = 'Good Afternoon'; icon = '🌤️'; } else if (hour < 21) { greeting = 'Good Evening'; icon = '🌇'; } else { greeting = 'Good Night'; icon = '🌙'; }
+
+      return (
+        <div className="fade-in">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+            <h1 className="text-2xl font-bold">{icon} {greeting}, {user.firstName}!</h1>
+            <div className="text-sm opacity-70"><i className="far fa-calendar-alt mr-1"></i> {now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</div>
+          </div>
+          {/* Quick actions */}
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">
+            {['Send Money','Transfer','Pay Bills','Deposit','Cards'].map((label,i) => (
+              <div key={i} className="glass p-3 rounded-xl text-center cursor-pointer hover:scale-105 transition">
+                <i className={`fas ${['fa-paper-plane','fa-arrow-right-arrow-left','fa-bolt','fa-circle-dollar','fa-credit-card'][i]} text-2xl text-[#d4af37]`}></i>
+                <p className="text-xs mt-1">{label}</p>
+              </div>
+            ))}
+          </div>
+          {/* Balance Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+            <div className="blue-gold-gradient p-5 rounded-2xl text-white shadow-xl card-shine">
+              <p className="opacity-80 text-sm">Total Balance</p>
+              <p className="text-3xl font-bold">${user.balance.toFixed(2)}</p>
+              <p className="text-xs opacity-70 mt-2"><i className="fas fa-arrow-up text-green-300"></i> +2.5% this month</p>
+            </div>
+            <div className="glass p-5 rounded-2xl">
+              <p className="opacity-70 text-sm">Savings</p>
+              <p className="text-2xl font-bold">${user.savings.toFixed(2)}</p>
+            </div>
+            <div className="glass p-5 rounded-2xl">
+              <p className="opacity-70 text-sm">Current</p>
+              <p className="text-2xl font-bold">${user.current.toFixed(2)}</p>
+            </div>
+            <div className="glass p-5 rounded-2xl">
+              <p className="opacity-70 text-sm">Investment</p>
+              <p className="text-2xl font-bold">${user.investment.toFixed(2)}</p>
+            </div>
+          </div>
+          {/* Transactions & Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2 glass p-4 rounded-2xl">
+              <h3 className="font-semibold mb-3">Recent Transactions</h3>
+              {MockDB.transactions.slice(0,4).map(tx => (
+                <div key={tx.id} className="flex justify-between items-center border-b border-gray-200/30 py-2">
+                  <div><p className="font-medium">{tx.description}</p><p className="text-xs opacity-60">{tx.date}</p></div>
+                  <span className={`${tx.type==='credit'?'text-green-500':'text-red-400'}`}>{tx.type==='credit'?'+':'-'}${Math.abs(tx.amount).toFixed(2)}</span>
+                </div>
+              ))}
+            </div>
+            <div className="glass p-4 rounded-2xl">
+              <h3 className="font-semibold mb-3">Quick Stats</h3>
+              <div className="space-y-2">
+                <div><span className="text-sm">Total Debits</span><span className="float-right font-bold">$1,245</span></div>
+                <div><span className="text-sm">Total Credits</span><span className="float-right font-bold text-green-500">$4,350</span></div>
+                <div><span className="text-sm">Savings Rate</span><span className="float-right font-bold text-[#d4af37]">32%</span></div>
+                <div className="mt-4 p-2 bg-[#d4af37]/10 rounded-xl text-center text-sm"><i className="fas fa-lightbulb text-[#d4af37]"></i> Tip: Save 20% of your income!</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ---------- Other pages (minimal for demo) ----------
+    function SendMoney({ user }) { return <div className="fade-in"><h2 className="text-2xl font-bold">Send Money</h2><p className="opacity-70">Transfer funds to anyone, anytime.</p><div className="glass p-6 mt-4 rounded-2xl max-w-md"><i className="fas fa-paper-plane text-3xl text-[#d4af37]"></i><p className="mt-2">Coming soon: full transfer flow with beneficiary management.</p></div></div>; }
+    function Cards({ user }) { return <div className="fade-in"><h2 className="text-2xl font-bold">Cards</h2><div className="glass p-6 mt-4 rounded-2xl max-w-md"><i className="fas fa-credit-card text-3xl text-[#d4af37]"></i><p className="mt-2">Virtual & Physical Cards. Freeze/Unfreeze.</p></div></div>; }
+    function Transactions({ user }) { return <div className="fade-in"><h2 className="text-2xl font-bold">Transactions</h2><div className="mt-4 space-y-2">{MockDB.transactions.map(tx=><div key={tx.id} className="glass p-3 rounded-xl flex justify-between"><span>{tx.description}</span><span className={tx.type==='credit'?'text-green-500':'text-red-400'}>{tx.type==='credit'?'+':'-'}${Math.abs(tx.amount)}</span></div>)}</div></div>; }
+    function Profile({ user }) { return <div className="fade-in"><h2 className="text-2xl font-bold">Profile</h2><div className="glass p-6 mt-4 rounded-2xl max-w-md"><img src={user.avatar} className="w-20 h-20 rounded-full" /><p><strong>{user.firstName} {user.lastName}</strong></p><p>{user.email}</p><p>KYC: {user.kycVerified ? '✅ Verified' : '⏳ Pending'}</p></div></div>; }
+    function AdminPanel({ user }) { return <div className="fade-in"><h2 className="text-2xl font-bold">Admin Panel</h2><div className="glass p-6 mt-4 rounded-2xl"><p><i className="fas fa-shield text-[#d4af37]"></i> Manage users, KYC, loans, and system settings.</p><div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">{['Users','KYC','Loans','Cards','Support','Analytics','Reports','Settings'].map((item,i)=><div key={i} className="bg-white/5 p-3 rounded-xl text-center cursor-pointer hover:bg-white/10"><i className={`fas ${['fa-users','fa-id-card','fa-hand-holding-dollar','fa-credit-card','fa-headset','fa-chart-pie','fa-file','fa-gear'][i]} text-2xl text-[#d4af37]`}></i><p className="text-sm">{item}</p></div>)}</div></div></div>; }
+    function Loans({ user }) { return <div className="fade-in"><h2 className="text-2xl font-bold">Loans</h2><div className="glass p-6 mt-4 rounded-2xl"><i className="fas fa-hand-holding-dollar text-3xl text-[#d4af37]"></i><p>Apply for loans, track repayments.</p></div></div>; }
+    function Investments({ user }) { return <div className="fade-in"><h2 className="text-2xl font-bold">Investments</h2><div className="glass p-6 mt-4 rounded-2xl"><i className="fas fa-chart-line text-3xl text-[#d4af37]"></i><p>Grow your wealth with Novabank.</p></div></div>; }
+    function Beneficiaries({ user }) { return <div className="fade-in"><h2 className="text-2xl font-bold">Beneficiaries</h2><div className="glass p-6 mt-4 rounded-2xl"><i className="fas fa-users text-3xl text-[#d4af37]"></i><p>Manage your trusted contacts.</p></div></div>; }
+    function Statements({ user }) { return <div className="fade-in"><h2 className="text-2xl font-bold">Statements</h2><div className="glass p-6 mt-4 rounded-2xl"><i className="fas fa-file-pdf text-3xl text-[#d4af37]"></i><p>Download PDF statements.</p></div></div>; }
+    function Support({ user }) { return <div className="fade-in"><h2 className="text-2xl font-bold">Support</h2><div className="glass p-6 mt-4 rounded-2xl"><i className="fas fa-headset text-3xl text-[#d4af37]"></i><p>Live chat & support tickets.</p></div></div>; }
+    function Settings({ user }) { return <div className="fade-in"><h2 className="text-2xl font-bold">Settings</h2><div className="glass p-6 mt-4 rounded-2xl"><i className="fas fa-gear text-3xl text-[#d4af37]"></i><p>Security, notifications, and preferences.</p></div></div>; }
+
+    // ---------- Public Pages ----------
+    function HomePage({ goLogin, goRegister }) {
+      return (
+        <div className="min-h-screen brand-bg text-white">
+          <div className="container mx-auto px-4 py-12">
+            <div className="flex justify-between items-center">
+              <h1 className="text-3xl font-bold"><i className="fas fa-rocket text-[#d4af37] mr-2"></i>Novabank</h1>
+              <div><button onClick={goLogin} className="btn-gold px-6 py-2 rounded-full mr-3">Login</button><button onClick={goRegister} className="border border-[#d4af37] px-6 py-2 rounded-full hover:bg-[#d4af37]/20">Register</button></div>
+            </div>
+            <div className="flex flex-col md:flex-row items-center justify-between mt-20 gap-10">
+              <div className="max-w-xl">
+                <h2 className="text-5xl font-bold leading-tight">Banking for the <span className="text-[#d4af37]">future</span></h2>
+                <p className="text-lg opacity-80 mt-4">Secure, modern, and premium digital banking. Manage your wealth with Novabank.</p>
+                <button onClick={goRegister} className="btn-gold px-8 py-3 rounded-full text-lg mt-6">Get Started <i className="fas fa-arrow-right ml-2"></i></button>
+              </div>
+              <div className="glass p-6 rounded-3xl w-full max-w-md">
+                <i className="fas fa-shield-alt text-4xl text-[#d4af37]"></i>
+                <p className="mt-2">🔒 Your money is safe with Novabank.</p>
+                <div className="grid grid-cols-2 gap-2 mt-4 text-sm">
+                  <div className="bg-white/5 p-2 rounded"><i className="fas fa-check-circle text-[#d4af37]"></i> 2FA</div>
+                  <div className="bg-white/5 p-2 rounded"><i className="fas fa-check-circle text-[#d4af37]"></i> Biometric</div>
+                  <div className="bg-white/5 p-2 rounded"><i className="fas fa-check-circle text-[#d4af37]"></i> JWT Auth</div>
+                  <div className="bg-white/5 p-2 rounded"><i className="fas fa-check-circle text-[#d4af37]"></i> Encryption</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function LoginPage({ onLogin, goHome }) {
+      const [email, setEmail] = useState('james@novabank.com');
+      const [pass, setPass] = useState('Password123!');
+      const handleSubmit = (e) => { e.preventDefault(); onLogin(email, pass); };
+      return (
+        <div className="min-h-screen brand-bg flex items-center justify-center p-4">
+          <div className="glass max-w-md w-full p-8 rounded-3xl text-white">
+            <h2 className="text-3xl font-bold text-center"><i className="fas fa-rocket text-[#d4af37] mr-2"></i>Novabank</h2>
+            <p className="text-center opacity-70 mb-6">Welcome back. Sign in to your account.</p>
+            <form onSubmit={handleSubmit}>
+              <input type="email" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} className="w-full p-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 mb-3" />
+              <input type="password" placeholder="Password" value={pass} onChange={e=>setPass(e.target.value)} className="w-full p-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 mb-3" />
+              <button type="submit" className="btn-gold w-full py-3 rounded-xl font-semibold">Sign In</button>
+            </form>
+            <p className="text-center mt-4 text-sm"><span className="opacity-60">Demo: </span> james@novabank.com / Password123!</p>
+            <button onClick={goHome} className="text-sm opacity-60 mt-2 block text-center w-full">← Back to Home</button>
+          </div>
+        </div>
+      );
+    }
+
+    function RegisterPage({ goLogin }) {
+      return (
+        <div className="min-h-screen brand-bg flex items-center justify-center p-4">
+          <div className="glass max-w-md w-full p-8 rounded-3xl text-white">
+            <h2 className="text-3xl font-bold text-center"><i className="fas fa-rocket text-[#d4af37] mr-2"></i>Novabank</h2>
+            <p className="text-center opacity-70 mb-6">Create your free account.</p>
+            <form onSubmit={(e)=>e.preventDefault()}>
+              <input type="text" placeholder="First Name" className="w-full p-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 mb-3" />
+              <input type="text" placeholder="Last Name" className="w-full p-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 mb-3" />
+              <input type="email" placeholder="Email" className="w-full p-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 mb-3" />
+              <input type="password" placeholder="Password" className="w-full p-3 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 mb-3" />
+              <button type="submit" className="btn-gold w-full py-3 rounded-xl font-semibold">Register</button>
+            </form>
+            <button onClick={goLogin} className="text-sm opacity-60 mt-2 block text-center w-full">Already have an account? Login</button>
+          </div>
+        </div>
+      );
+    }
+
+    // Mount
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
