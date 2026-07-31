@@ -1,1 +1,1749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NovaBank · Premium Digital Banking</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f0f4f8;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+      background-image: radial-gradient(ellipse at 10% 20%, rgba(37, 99, 235, 0.05) 0%, transparent 50%),
+                        radial-gradient(ellipse at 90% 80%, rgba(37, 99, 235, 0.05) 0%, transparent 50%);
+    }
 
+    /* ============================================================
+       LOGIN / SIGNUP OVERLAY
+       ============================================================ */
+    .auth-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(10, 37, 64, 0.85);
+      backdrop-filter: blur(16px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 1.5rem;
+    }
+    
+    .auth-box {
+      background: white;
+      padding: 2.5rem 2.8rem;
+      border-radius: 2rem;
+      max-width: 440px;
+      width: 100%;
+      box-shadow: 0 40px 100px rgba(0, 0, 0, 0.3);
+      animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    @keyframes slideUp {
+      from {
+        transform: translateY(40px);
+        opacity: 0;
+      }
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+    
+    .auth-box .brand {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    
+    .auth-box .brand .logo-icon {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      border-radius: 18px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      color: white;
+      margin-bottom: 0.8rem;
+      box-shadow: 0 12px 32px rgba(37, 99, 235, 0.3);
+    }
+    
+    .auth-box .brand h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #0a2540;
+      letter-spacing: -0.5px;
+    }
+    
+    .auth-box .brand h1 span {
+      color: #2563eb;
+    }
+    
+    .auth-box .brand p {
+      color: #6b7b8f;
+      font-size: 0.9rem;
+      margin-top: 0.2rem;
+    }
+    
+    .auth-box .form-group {
+      margin-bottom: 1.2rem;
+    }
+    
+    .auth-box .form-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #0a2540;
+      margin-bottom: 0.4rem;
+    }
+    
+    .auth-box .form-group input {
+      width: 100%;
+      padding: 0.9rem 1.2rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 1rem;
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.2s;
+      background: #f8fafc;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .auth-box .form-group input:focus {
+      border-color: #2563eb;
+      background: white;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+    }
+    
+    .auth-box .btn-auth {
+      width: 100%;
+      padding: 0.9rem;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white;
+      border: none;
+      border-radius: 1rem;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: 'Inter', sans-serif;
+      margin-top: 0.5rem;
+    }
+    
+    .auth-box .btn-auth:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(37, 99, 235, 0.35);
+    }
+    
+    .auth-box .btn-auth-secondary {
+      width: 100%;
+      padding: 0.9rem;
+      background: transparent;
+      color: #2563eb;
+      border: 2px solid #2563eb;
+      border-radius: 1rem;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: 'Inter', sans-serif;
+      margin-top: 0.5rem;
+    }
+    
+    .auth-box .btn-auth-secondary:hover {
+      background: #2563eb;
+      color: white;
+    }
+    
+    .auth-box .error-msg {
+      color: #dc2626;
+      font-size: 0.85rem;
+      text-align: center;
+      margin-top: 0.8rem;
+      display: none;
+    }
+    
+    .auth-box .success-msg {
+      color: #059669;
+      font-size: 0.85rem;
+      text-align: center;
+      margin-top: 0.8rem;
+      display: none;
+    }
+    
+    .auth-box .auth-toggle {
+      text-align: center;
+      margin-top: 1.2rem;
+      font-size: 0.9rem;
+      color: #6b7b8f;
+    }
+    
+    .auth-box .auth-toggle a {
+      color: #2563eb;
+      cursor: pointer;
+      font-weight: 600;
+      text-decoration: none;
+    }
+    
+    .auth-box .auth-toggle a:hover {
+      text-decoration: underline;
+    }
+
+    /* ============================================================
+       MAIN APP
+       ============================================================ */
+    .container {
+      max-width: 580px;
+      width: 100%;
+      background: white;
+      border-radius: 2.5rem;
+      box-shadow: 0 30px 80px rgba(10, 37, 64, 0.08);
+      padding: 2rem 2rem 1.5rem;
+      transition: 0.3s;
+    }
+    
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.8rem;
+    }
+    
+    .header .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .header .brand .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.2rem;
+    }
+    
+    .header .brand h1 {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: #0a2540;
+      letter-spacing: -0.5px;
+    }
+    
+    .header .brand h1 span {
+      color: #2563eb;
+    }
+    
+    .header .user-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .header .user-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #f1f5f9;
+      padding: 0.4rem 1rem 0.4rem 0.8rem;
+      border-radius: 40px;
+      font-weight: 600;
+      font-size: 0.8rem;
+      color: #0a2540;
+    }
+    
+    .header .user-badge .avatar {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 0.7rem;
+    }
+    
+    .btn-logout {
+      background: transparent;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 1rem;
+      padding: 0.4rem;
+      border-radius: 50%;
+      transition: 0.2s;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .btn-logout:hover {
+      background: #f1f5f9;
+      color: #dc2626;
+    }
+
+    /* Balance Card */
+    .balance-card {
+      background: linear-gradient(145deg, #0a2540, #0f2f4a);
+      padding: 2rem 2rem 1.8rem;
+      border-radius: 2rem;
+      color: white;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .balance-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -20%;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.15) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    
+    .balance-card::after {
+      content: '● ● ● ●';
+      position: absolute;
+      bottom: 1.2rem;
+      right: 1.8rem;
+      color: rgba(255, 255, 255, 0.06);
+      font-size: 0.8rem;
+      letter-spacing: 6px;
+    }
+    
+    .balance-card .label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      opacity: 0.6;
+      font-weight: 500;
+    }
+    
+    .balance-card .amount {
+      font-size: 2.6rem;
+      font-weight: 700;
+      margin: 0.3rem 0 0.5rem;
+      letter-spacing: -1px;
+    }
+    
+    .balance-card .amount small {
+      font-size: 1.2rem;
+      font-weight: 400;
+      opacity: 0.5;
+      margin-left: 6px;
+    }
+    
+    .balance-card .account-info {
+      display: flex;
+      gap: 2rem;
+      font-size: 0.75rem;
+      opacity: 0.5;
+      font-family: 'Inter', monospace;
+    }
+    
+    .balance-card .account-info span i {
+      margin-right: 6px;
+    }
+
+    /* Section Cards */
+    .section-card {
+      background: #f8fafc;
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      margin-bottom: 1.2rem;
+      border: 1px solid #eef2f6;
+      transition: 0.2s;
+    }
+    
+    .section-card:hover {
+      border-color: #dce3ed;
+    }
+    
+    .section-title {
+      font-weight: 700;
+      color: #0a2540;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.95rem;
+    }
+    
+    .section-title i {
+      color: #2563eb;
+      font-size: 1.1rem;
+    }
+    
+    .section-title .badge {
+      background: #2563eb;
+      color: white;
+      padding: 0.15rem 0.7rem;
+      border-radius: 40px;
+      font-size: 0.6rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .section-title .badge.gold {
+      background: #f59e0b;
+    }
+    
+    .input-row {
+      display: flex;
+      gap: 0.8rem;
+      margin-bottom: 0.8rem;
+    }
+    
+    .input-row input {
+      flex: 1;
+      padding: 0.8rem 1.2rem;
+      border: 2px solid #e2e8f0;
+      border-radius: 1rem;
+      font-size: 0.95rem;
+      outline: none;
+      transition: 0.2s;
+      background: white;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .input-row input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.06);
+    }
+    
+    .input-row input::placeholder {
+      color: #94a3b8;
+    }
+    
+    .btn {
+      padding: 0.8rem 1.8rem;
+      border: none;
+      border-radius: 1rem;
+      font-weight: 700;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.25s;
+      white-space: nowrap;
+      font-family: 'Inter', sans-serif;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: white;
+    }
+    
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(37, 99, 235, 0.3);
+    }
+    
+    .btn-success {
+      background: linear-gradient(135deg, #059669, #047857);
+      color: white;
+    }
+    
+    .btn-success:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(5, 150, 105, 0.3);
+    }
+    
+    .btn-outline {
+      background: transparent;
+      border: 2px solid #e2e8f0;
+      color: #0a2540;
+    }
+    
+    .btn-outline:hover:not(:disabled) {
+      border-color: #2563eb;
+      color: #2563eb;
+      background: #f8faff;
+    }
+    
+    .btn-danger {
+      background: #dc2626;
+      color: white;
+    }
+    
+    .btn-danger:hover:not(:disabled) {
+      background: #b91c1c;
+    }
+    
+    .btn-sm {
+      padding: 0.4rem 1rem;
+      font-size: 0.75rem;
+    }
+    
+    .btn-block {
+      width: 100%;
+      justify-content: center;
+    }
+    
+    .quick-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 0.6rem;
+      margin-top: 0.5rem;
+    }
+    
+    .quick-actions .btn {
+      padding: 0.5rem;
+      font-size: 0.8rem;
+      justify-content: center;
+    }
+
+    /* Admin Panel */
+    .admin-panel {
+      background: #0f172a;
+      border-radius: 1.2rem;
+      padding: 1.5rem;
+      border: 1px solid #1e293b;
+    }
+    
+    .admin-panel .admin-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #e2e8f0;
+      font-weight: 600;
+      font-size: 0.85rem;
+      margin-bottom: 1rem;
+    }
+    
+    .admin-panel .admin-header i {
+      color: #4ade80;
+    }
+    
+    .admin-panel .admin-email {
+      background: #0a0f1a;
+      padding: 0.5rem 1rem;
+      border-radius: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #94a3b8;
+      font-size: 0.8rem;
+      font-family: 'Inter', monospace;
+      margin-bottom: 1rem;
+    }
+    
+    .admin-panel .admin-email i {
+      color: #60a5fa;
+    }
+    
+    .admin-panel .code-display {
+      background: #0a0f1a;
+      padding: 1.2rem;
+      border-radius: 1rem;
+      text-align: center;
+      border: 2px dashed #4ade80;
+      margin-bottom: 0.8rem;
+    }
+    
+    .admin-panel .code-display .label {
+      color: #64748b;
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    
+    .admin-panel .code-display .code {
+      color: #4ade80;
+      font-size: 2.8rem;
+      font-weight: 700;
+      letter-spacing: 14px;
+      font-family: 'Inter', monospace;
+      text-shadow: 0 0 40px rgba(74, 222, 128, 0.15);
+    }
+    
+    .admin-panel .code-display .code.empty {
+      color: #475569;
+      letter-spacing: 4px;
+      font-size: 1rem;
+    }
+    
+    .admin-panel .status {
+      color: #94a3b8;
+      font-size: 0.8rem;
+      text-align: center;
+      padding: 0.5rem;
+      border-radius: 0.6rem;
+      background: #0a0f1a;
+    }
+    
+    .admin-panel .status.active {
+      color: #4ade80;
+    }
+    
+    .admin-panel .status i {
+      margin-right: 6px;
+    }
+
+    /* Verification Box */
+    .verification-box {
+      background: #f0f7ff;
+      border: 2px solid #bfdbfe;
+      border-radius: 1.2rem;
+      padding: 1.2rem;
+      margin-top: 0.8rem;
+      animation: fadeIn 0.4s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .verification-box .notice {
+      background: #fef3c7;
+      padding: 0.6rem 1rem;
+      border-radius: 0.8rem;
+      font-size: 0.85rem;
+      color: #92400e;
+      margin-bottom: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .verification-box .notice i {
+      color: #f59e0b;
+    }
+    
+    .verification-box .email-sim {
+      background: white;
+      padding: 0.8rem 1rem;
+      border-radius: 0.8rem;
+      font-size: 0.85rem;
+      border-left: 4px solid #2563eb;
+      margin: 0.5rem 0;
+      color: #0a2540;
+    }
+    
+    .verification-box .email-sim i {
+      color: #2563eb;
+      margin-right: 6px;
+    }
+    
+    .verification-box .email-sim small {
+      color: #6b7b8f;
+      font-size: 0.75rem;
+      display: block;
+      margin-top: 4px;
+    }
+    
+    .timer {
+      font-size: 0.85rem;
+      color: #6b7b8f;
+      text-align: center;
+      margin: 0.5rem 0;
+    }
+    
+    .timer i {
+      color: #dc2626;
+      margin-right: 6px;
+    }
+
+    /* Transaction List */
+    .tx-list {
+      max-height: 280px;
+      overflow-y: auto;
+    }
+    
+    .tx-list::-webkit-scrollbar {
+      width: 4px;
+    }
+    
+    .tx-list::-webkit-scrollbar-track {
+      background: #f1f5f9;
+      border-radius: 10px;
+    }
+    
+    .tx-list::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 10px;
+    }
+    
+    .tx-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .tx-item:last-child {
+      border-bottom: none;
+    }
+    
+    .tx-item .left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .tx-item .left .icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+    }
+    
+    .tx-item .left .icon.credit {
+      background: #d1fae5;
+      color: #059669;
+    }
+    
+    .tx-item .left .icon.debit {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+    
+    .tx-item .left .icon.pending {
+      background: #fef3c7;
+      color: #d97706;
+    }
+    
+    .tx-item .left .info .name {
+      font-weight: 600;
+      color: #0a2540;
+      font-size: 0.9rem;
+    }
+    
+    .tx-item .left .info .date {
+      font-size: 0.7rem;
+      color: #94a3b8;
+    }
+    
+    .tx-item .left .info .status-badge {
+      font-size: 0.6rem;
+      padding: 0.15rem 0.6rem;
+      border-radius: 40px;
+      font-weight: 600;
+      display: inline-block;
+      margin-top: 2px;
+    }
+    
+    .tx-item .left .info .status-badge.completed {
+      background: #d1fae5;
+      color: #065f46;
+    }
+    
+    .tx-item .left .info .status-badge.pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+    
+    .tx-item .left .info .status-badge.failed {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+    
+    .tx-item .amount {
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+    
+    .tx-item .amount.positive {
+      color: #059669;
+    }
+    
+    .tx-item .amount.negative {
+      color: #dc2626;
+    }
+    
+    .empty-state {
+      text-align: center;
+      color: #94a3b8;
+      padding: 1.5rem 0;
+      font-size: 0.9rem;
+    }
+    
+    .empty-state i {
+      display: block;
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      opacity: 0.3;
+    }
+
+    /* Alert */
+    .alert {
+      padding: 0.8rem 1.2rem;
+      border-radius: 1rem;
+      margin-bottom: 1rem;
+      font-weight: 500;
+      font-size: 0.9rem;
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    .alert-success {
+      background: #d1fae5;
+      color: #065f46;
+      display: block;
+    }
+    
+    .alert-error {
+      background: #fee2e2;
+      color: #991b1b;
+      display: block;
+    }
+    
+    .alert-info {
+      background: #dbeafe;
+      color: #1e40af;
+      display: block;
+    }
+    
+    .alert-warning {
+      background: #fef3c7;
+      color: #92400e;
+      display: block;
+    }
+
+    /* Link Box */
+    .link-box {
+      background: white;
+      padding: 0.8rem 1rem;
+      border-radius: 1rem;
+      border: 2px dashed #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      margin-top: 0.5rem;
+    }
+    
+    .link-box input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 0.8rem;
+      color: #0a2540;
+      font-family: 'Inter', monospace;
+    }
+    
+    .link-box .btn-copy {
+      background: #f1f5f9;
+      border: none;
+      padding: 0.3rem 1rem;
+      border-radius: 0.8rem;
+      font-weight: 600;
+      font-size: 0.75rem;
+      color: #2563eb;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    
+    .link-box .btn-copy:hover {
+      background: #e2e8f0;
+    }
+    
+    .cred-share {
+      background: #f1f5f9;
+      padding: 0.8rem 1rem;
+      border-radius: 0.8rem;
+      margin-top: 0.8rem;
+      font-size: 0.8rem;
+      color: #0a2540;
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+    }
+    
+    .cred-share strong {
+      color: #475569;
+      font-weight: 600;
+    }
+    
+    .cred-share .value {
+      color: #2563eb;
+      font-weight: 600;
+      font-family: 'Inter', monospace;
+    }
+
+    .footer-note {
+      text-align: center;
+      font-size: 0.7rem;
+      color: #94a3b8;
+      margin-top: 1.5rem;
+      padding-top: 1.2rem;
+      border-top: 1px solid #eef2f6;
+    }
+    
+    .footer-note i {
+      margin-right: 4px;
+    }
+
+    /* Responsive */
+    @media (max-width: 520px) {
+      body { padding: 0.8rem; }
+      .container { padding: 1.2rem; border-radius: 1.8rem; }
+      .auth-box { padding: 1.8rem; }
+      .balance-card .amount { font-size: 1.6rem; }
+      .input-row { flex-direction: column; }
+      .btn { width: 100%; justify-content: center; }
+      .quick-actions { grid-template-columns: 1fr 1fr; }
+      .header .brand h1 { font-size: 1.1rem; }
+      .admin-panel .code-display .code { font-size: 2rem; letter-spacing: 10px; }
+      .cred-share { flex-direction: column; gap: 0.3rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ============================================================
+       AUTH OVERLAY (Login / Signup)
+       ============================================================ -->
+  <div class="auth-overlay" id="authOverlay">
+    <div class="auth-box" id="authBox">
+      <div class="brand">
+        <div class="logo-icon"><i class="fas fa-bolt"></i></div>
+        <h1>Nova<span>Bank</span></h1>
+        <p id="authSubtitle">Secure · Premium · Global</p>
+      </div>
+      
+      <!-- Login Form -->
+      <div id="loginForm">
+        <div class="form-group">
+          <label><i class="far fa-envelope" style="margin-right:6px;"></i> Email Address</label>
+          <input type="email" id="loginEmail" placeholder="Enter your email" />
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-lock" style="margin-right:6px;"></i> Password</label>
+          <input type="password" id="loginPassword" placeholder="Enter your password" />
+        </div>
+        
+        <button class="btn-auth" onclick="handleLogin()">
+          <i class="fas fa-sign-in-alt"></i> Sign In
+        </button>
+        
+        <div class="error-msg" id="loginError">
+          <i class="fas fa-exclamation-circle"></i> Invalid email or password
+        </div>
+        
+        <div class="auth-toggle">
+          Don't have an account? <a onclick="showSignup()">Sign Up</a>
+        </div>
+      </div>
+      
+      <!-- Signup Form -->
+      <div id="signupForm" style="display:none;">
+        <div class="form-group">
+          <label><i class="fas fa-user" style="margin-right:6px;"></i> Full Name</label>
+          <input type="text" id="signupName" placeholder="Enter your full name" />
+        </div>
+        <div class="form-group">
+          <label><i class="far fa-envelope" style="margin-right:6px;"></i> Email Address</label>
+          <input type="email" id="signupEmail" placeholder="Enter your email" />
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-lock" style="margin-right:6px;"></i> Password</label>
+          <input type="password" id="signupPassword" placeholder="Create a password (min 6 characters)" />
+        </div>
+        <div class="form-group">
+          <label><i class="fas fa-lock" style="margin-right:6px;"></i> Confirm Password</label>
+          <input type="password" id="signupConfirm" placeholder="Confirm your password" />
+        </div>
+        
+        <button class="btn-auth" onclick="handleSignup()">
+          <i class="fas fa-user-plus"></i> Create Account
+        </button>
+        
+        <div class="error-msg" id="signupError">
+          <i class="fas fa-exclamation-circle"></i> Please check your information
+        </div>
+        
+        <div class="success-msg" id="signupSuccess">
+          <i class="fas fa-check-circle"></i> Account created! Please login.
+        </div>
+        
+        <div class="auth-toggle">
+          Already have an account? <a onclick="showLogin()">Sign In</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       MAIN APP
+       ============================================================ -->
+  <div class="container" id="mainApp" style="display:none;">
+    
+    <!-- Header -->
+    <div class="header">
+      <div class="brand">
+        <div class="logo-icon"><i class="fas fa-bolt"></i></div>
+        <h1>Nova<span>Bank</span></h1>
+      </div>
+      <div class="user-actions">
+        <div class="user-badge">
+          <div class="avatar" id="userAvatar">U</div>
+          <span id="userDisplayName">User</span>
+        </div>
+        <button class="btn-logout" onclick="logout()" title="Logout">
+          <i class="fas fa-sign-out-alt"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Balance Card -->
+    <div class="balance-card">
+      <div class="label">Available Balance</div>
+      <div class="amount" id="balanceDisplay">$15,210,000.00 <small>USD</small></div>
+      <div class="account-info">
+        <span><i class="fas fa-user"></i> <span id="userEmailDisplay">user@novabank.com</span></span>
+        <span><i class="fas fa-university"></i> Account #•••• 8842</span>
+      </div>
+    </div>
+
+    <!-- Alert -->
+    <div id="alertBox" class="alert"></div>
+
+    <!-- Load Money (Admin Only) -->
+    <div class="section-card" id="adminLoadSection">
+      <div class="section-title">
+        <i class="fas fa-plus-circle"></i> Load Funds
+        <span class="badge gold">ADMIN</span>
+      </div>
+      <div class="input-row">
+        <input type="number" id="loadAmount" placeholder="Enter amount" min="1" step="1" />
+        <button class="btn btn-success" onclick="loadMoney()">
+          <i class="fas fa-arrow-up"></i> Load
+        </button>
+      </div>
+      <div class="quick-actions">
+        <button class="btn btn-outline btn-sm" onclick="quickLoad(100)">+$100</button>
+        <button class="btn btn-outline btn-sm" onclick="quickLoad(500)">+$500</button>
+        <button class="btn btn-outline btn-sm" onclick="quickLoad(1000)">+$1K</button>
+        <button class="btn btn-outline btn-sm" onclick="quickLoad(5000)">+$5K</button>
+      </div>
+    </div>
+
+    <!-- Generate Share Link -->
+    <div class="section-card">
+      <div class="section-title">
+        <i class="fas fa-link"></i> Share Access
+        <span class="badge">LINK</span>
+      </div>
+      <p style="font-size:0.85rem; color:#6b7b8f; margin-bottom:0.8rem;">
+        Generate a secure login link for users to access this account.
+      </p>
+      <button class="btn btn-primary btn-block" onclick="generateLink()">
+        <i class="fas fa-share-alt"></i> Generate Share Link
+      </button>
+      <div id="linkContainer" style="display:none; margin-top:0.8rem;">
+        <div class="link-box">
+          <input type="text" id="shareLinkInput" readonly />
+          <button class="btn-copy" onclick="copyLink()"><i class="fas fa-copy"></i> Copy</button>
+        </div>
+        <div class="cred-share">
+          <div><strong>📧 Email:</strong> <span class="value" id="shareEmail">admin@novabank.com</span></div>
+          <div><strong>🔑 Password:</strong> <span class="value" id="sharePassword">admin123</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin Panel -->
+    <div class="section-card">
+      <div class="section-title">
+        <i class="fas fa-user-shield"></i> Admin Verification
+        <span class="badge gold">SECURE</span>
+      </div>
+      
+      <div class="admin-panel">
+        <div class="admin-header">
+          <i class="fas fa-envelope"></i> Code sent to: <strong style="color:#60a5fa;">admin@novabank.com</strong>
+        </div>
+        
+        <div class="admin-email">
+          <i class="fas fa-envelope"></i>
+          <span>📧 admin@novabank.com · <span style="color:#64748b;font-size:0.7rem;">Only admin receives codes</span></span>
+        </div>
+        
+        <div id="adminCodeDisplay">
+          <div class="code-display">
+            <div class="label"><i class="fas fa-key"></i> VERIFICATION CODE</div>
+            <div class="code empty" id="adminCodeValue">No active transfer</div>
+          </div>
+          <div class="status" id="adminStatus">
+            <i class="fas fa-clock"></i> <span id="adminStatusText">Waiting for transfer request...</span>
+          </div>
+        </div>
+        
+        <div style="margin-top:0.8rem; font-size:0.7rem; color:#64748b; text-align:center; border-top:1px solid #1e293b; padding-top:0.8rem;">
+          <i class="fas fa-info-circle"></i> Share this code with the user to authorize the transfer
+        </div>
+      </div>
+    </div>
+
+    <!-- Transfer Section -->
+    <div class="section-card">
+      <div class="section-title">
+        <i class="fas fa-paper-plane"></i> Send Money
+        <span class="badge">SECURE</span>
+      </div>
+      
+      <div id="transferForm">
+        <div style="background:#fefce8; border:1px solid #fde68a; border-radius:1rem; padding:0.8rem 1rem; margin-bottom:1rem; font-size:0.85rem; color:#78350f;">
+          <i class="fas fa-shield-alt" style="color:#f59e0b; margin-right:6px;"></i>
+          <strong>Admin Approval Required:</strong> A code will be sent to admin@novabank.com. Enter it to complete the transfer.
+        </div>
+        
+        <div class="input-row">
+          <input type="text" id="transferTo" placeholder="Recipient account or email" />
+        </div>
+        <div class="input-row">
+          <input type="number" id="transferAmount" placeholder="Amount to send" min="1" step="1" />
+          <button class="btn btn-primary" onclick="initiateTransfer()">
+            <i class="fas fa-paper-plane"></i> Request
+          </button>
+        </div>
+        <div style="font-size:0.75rem; color:#94a3b8; margin-top:0.2rem;">
+          <i class="fas fa-envelope"></i> Code will be sent to: <strong style="color:#0a2540;">admin@novabank.com</strong>
+        </div>
+      </div>
+
+      <!-- Verification -->
+      <div id="verificationBox" style="display:none;" class="verification-box">
+        <div class="notice">
+          <i class="fas fa-clock"></i>
+          <strong>Awaiting Admin Code:</strong> Ask the administrator for the verification code
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <span style="font-weight:700; color:#0a2540; font-size:0.9rem;">
+            <i class="fas fa-key" style="color:#2563eb;"></i> Enter Admin Code
+          </span>
+          <span class="badge" style="background:#2563eb;" id="transferAmountDisplay">$0.00</span>
+        </div>
+
+        <div class="email-sim">
+          <i class="fas fa-envelope"></i> <strong>Code sent to admin@novabank.com</strong>
+          <small>Ask the admin for the 6-digit code</small>
+        </div>
+
+        <div class="input-row" style="margin-top:0.5rem;">
+          <input type="text" id="verificationCode" placeholder="Enter 6-digit code" maxlength="6" />
+          <button class="btn btn-success" onclick="verifyTransfer()">
+            <i class="fas fa-check"></i> Verify
+          </button>
+        </div>
+
+        <div class="timer">
+          <i class="fas fa-clock"></i> Code expires in: <span id="countdown">2:00</span>
+        </div>
+
+        <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
+          <button class="btn btn-outline btn-sm" onclick="resendCode()" style="flex:1;">
+            <i class="fas fa-redo"></i> Resend
+          </button>
+          <button class="btn btn-danger btn-sm" onclick="cancelTransfer()" style="flex:1;">
+            <i class="fas fa-times"></i> Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transaction History -->
+    <div class="section-card">
+      <div class="section-title">
+        <i class="fas fa-history"></i> Transaction History
+        <span class="badge" id="txCount">0</span>
+      </div>
+      <div class="tx-list" id="transactionList">
+        <!-- Will be populated by JavaScript -->
+      </div>
+    </div>
+
+    <!-- Reset -->
+    <button class="btn btn-danger btn-block" onclick="resetAll()" style="margin-top:0.2rem;">
+      <i class="fas fa-trash"></i> Reset All Data
+    </button>
+
+    <div class="footer-note">
+      <i class="fas fa-shield-alt"></i> NovaBank · Secure Digital Banking · Demo Version
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    //  STATE MANAGEMENT
+    // ============================================================
+    function getState() {
+      const defaultState = {
+        balance: 15210000,
+        transactions: [
+          { type: 'credit', amount: 10000, recipient: 'Cash Deposit', date: 'Jan 15, 2026, 9:30 AM', status: 'completed' },
+          { type: 'credit', amount: 40000, recipient: 'Wire Transfer', date: 'Jan 22, 2026, 2:15 PM', status: 'completed' },
+          { type: 'credit', amount: 100000, recipient: 'Business Payment', date: 'Feb 5, 2026, 11:45 AM', status: 'completed' },
+          { type: 'credit', amount: 15000000, recipient: 'Investment Return', date: 'Mar 10, 2026, 4:20 PM', status: 'completed' },
+          { type: 'debit', amount: 40000, recipient: 'ATM Withdrawal', date: 'Jan 18, 2026, 8:00 AM', status: 'completed' },
+          { type: 'debit', amount: 60000, recipient: 'Transfer to Savings', date: 'Jan 25, 2026, 3:30 PM', status: 'completed' }
+        ],
+        adminEmail: 'admin@novabank.com',
+        adminPassword: 'admin123',
+        users: [
+          { name: 'Admin User', email: 'admin@novabank.com', password: 'admin123' }
+        ],
+        currentUser: null,
+        pendingTransfer: null,
+        adminCode: null,
+        codeExpiry: null,
+        shareLink: null,
+        shareToken: null
+      };
+      try {
+        const stored = localStorage.getItem('novabankState');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          return { ...defaultState, ...parsed };
+        }
+      } catch (e) { console.warn('State read error', e); }
+      return defaultState;
+    }
+
+    function saveState(state) {
+      try {
+        localStorage.setItem('novabankState', JSON.stringify(state));
+      } catch (e) { console.warn('State save error', e); }
+    }
+
+    let state = getState();
+    let countdownInterval = null;
+
+    // ============================================================
+    //  AUTH UI TOGGLES
+    // ============================================================
+    function showLogin() {
+      document.getElementById('loginForm').style.display = 'block';
+      document.getElementById('signupForm').style.display = 'none';
+      document.getElementById('authSubtitle').textContent = 'Secure · Premium · Global';
+      document.getElementById('signupError').style.display = 'none';
+      document.getElementById('signupSuccess').style.display = 'none';
+      document.getElementById('loginError').style.display = 'none';
+    }
+
+    function showSignup() {
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('signupForm').style.display = 'block';
+      document.getElementById('authSubtitle').textContent = 'Create your free account';
+      document.getElementById('signupError').style.display = 'none';
+      document.getElementById('signupSuccess').style.display = 'none';
+      document.getElementById('loginError').style.display = 'none';
+    }
+
+    // ============================================================
+    //  AUTH FUNCTIONS
+    // ============================================================
+    
+    // Signup
+    function handleSignup() {
+      const name = document.getElementById('signupName').value.trim();
+      const email = document.getElementById('signupEmail').value.trim();
+      const password = document.getElementById('signupPassword').value;
+      const confirm = document.getElementById('signupConfirm').value;
+      const errorEl = document.getElementById('signupError');
+      const successEl = document.getElementById('signupSuccess');
+
+      // Validation
+      if (!name || !email || !password || !confirm) {
+        errorEl.textContent = '❌ Please fill in all fields';
+        errorEl.style.display = 'block';
+        successEl.style.display = 'none';
+        return;
+      }
+
+      if (password.length < 6) {
+        errorEl.textContent = '❌ Password must be at least 6 characters';
+        errorEl.style.display = 'block';
+        successEl.style.display = 'none';
+        return;
+      }
+
+      if (password !== confirm) {
+        errorEl.textContent = '❌ Passwords do not match';
+        errorEl.style.display = 'block';
+        successEl.style.display = 'none';
+        return;
+      }
+
+      // Check if email already exists
+      if (state.users.some(u => u.email === email)) {
+        errorEl.textContent = '❌ Email already registered. Please login.';
+        errorEl.style.display = 'block';
+        successEl.style.display = 'none';
+        return;
+      }
+
+      // Create user
+      state.users.push({ name, email, password });
+      saveState(state);
+
+      // Show success
+      errorEl.style.display = 'none';
+      successEl.textContent = '✅ Account created successfully! Please login.';
+      successEl.style.display = 'block';
+
+      // Clear form
+      document.getElementById('signupName').value = '';
+      document.getElementById('signupEmail').value = '';
+      document.getElementById('signupPassword').value = '';
+      document.getElementById('signupConfirm').value = '';
+
+      // Switch to login after 2 seconds
+      setTimeout(() => {
+        showLogin();
+        document.getElementById('loginEmail').value = email;
+        document.getElementById('loginPassword').value = '';
+        successEl.style.display = 'none';
+      }, 2000);
+    }
+
+    // Login
+    function handleLogin() {
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value.trim();
+      const errorEl = document.getElementById('loginError');
+
+      // Find user
+      const user = state.users.find(u => u.email === email && u.password === password);
+
+      if (user) {
+        state.currentUser = user;
+        state.isLoggedIn = true;
+        saveState(state);
+        document.getElementById('authOverlay').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        render();
+        showAlert(`✅ Welcome back, ${user.name}!`, 'success');
+      } else {
+        errorEl.style.display = 'block';
+        setTimeout(() => { errorEl.style.display = 'none'; }, 3000);
+      }
+    }
+
+    // Logout
+    function logout() {
+      state.isLoggedIn = false;
+      state.currentUser = null;
+      saveState(state);
+      document.getElementById('authOverlay').style.display = 'flex';
+      document.getElementById('mainApp').style.display = 'none';
+      document.getElementById('loginEmail').value = '';
+      document.getElementById('loginPassword').value = '';
+      showLogin();
+    }
+
+    // Check login status
+    function checkLogin() {
+      if (state.isLoggedIn && state.currentUser) {
+        document.getElementById('authOverlay').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        render();
+      } else {
+        document.getElementById('authOverlay').style.display = 'flex';
+        document.getElementById('mainApp').style.display = 'none';
+        showLogin();
+      }
+    }
+
+    // Enter key support
+    document.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        if (document.getElementById('loginForm').style.display !== 'none') {
+          handleLogin();
+        } else if (document.getElementById('signupForm').style.display !== 'none') {
+          handleSignup();
+        }
+      }
+    });
+
+    // ============================================================
+    //  RENDER
+    // ============================================================
+    function render() {
+      if (!state.isLoggedIn || !state.currentUser) return;
+
+      // Format balance with commas
+      const formattedBalance = state.balance.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+      
+      document.getElementById('balanceDisplay').innerHTML =
+        `$${formattedBalance} <small>USD</small>`;
+      
+      // User info
+      document.getElementById('userDisplayName').textContent = state.currentUser.name;
+      document.getElementById('userEmailDisplay').textContent = state.currentUser.email;
+      document.getElementById('userAvatar').textContent = state.currentUser.name.charAt(0).toUpperCase();
+      
+      document.getElementById('txCount').textContent = state.transactions.length;
+
+      // Transactions
+      const txList = document.getElementById('transactionList');
+      if (state.transactions.length === 0) {
+        txList.innerHTML = '<div class="empty-state"><i class="fas fa-receipt"></i>No transactions yet</div>';
+      } else {
+        txList.innerHTML = state.transactions.slice().reverse().map((tx) => {
+          const isCredit = tx.type === 'credit';
+          const iconClass = isCredit ? 'credit' : (tx.status === 'waiting' ? 'pending' : 'debit');
+          const icon = isCredit ? 'fa-arrow-down' : (tx.status === 'waiting' ? 'fa-clock' : 'fa-arrow-up');
+          const statusClass = tx.status === 'completed' ? 'completed' : (tx.status === 'waiting' ? 'pending' : 'failed');
+          const statusLabel = tx.status === 'completed' ? '✅ Completed' : (tx.status === 'waiting' ? '⏳ Pending' : '❌ Failed');
+          const amountClass = isCredit ? 'positive' : 'negative';
+          const sign = isCredit ? '+' : '-';
+          const formattedAmount = tx.amount.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+          });
+          return `
+            <div class="tx-item">
+              <div class="left">
+                <div class="icon ${iconClass}"><i class="fas ${icon}"></i></div>
+                <div class="info">
+                  <div class="name">${tx.recipient}</div>
+                  <div class="date">${tx.date}</div>
+                  <span class="status-badge ${statusClass}">${statusLabel}</span>
+                </div>
+              </div>
+              <div class="amount ${amountClass}">${sign}$${formattedAmount}</div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      // Verification
+      const vBox = document.getElementById('verificationBox');
+      if (state.pendingTransfer) {
+        vBox.style.display = 'block';
+        document.getElementById('transferForm').style.opacity = '0.4';
+        document.getElementById('transferForm').querySelectorAll('input, button').forEach(el => el.disabled = true);
+        const formattedPending = state.pendingTransfer.amount.toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+        document.getElementById('transferAmountDisplay').textContent = `$${formattedPending}`;
+        document.getElementById('adminCodeValue').textContent = state.adminCode || '------';
+        document.getElementById('adminCodeValue').className = 'code';
+        document.getElementById('adminStatusText').textContent = `📧 Code sent at ${new Date().toLocaleTimeString()}`;
+        document.getElementById('adminStatus').className = 'status active';
+        if (state.codeExpiry) startCountdown();
+      } else {
+        vBox.style.display = 'none';
+        document.getElementById('transferForm').style.opacity = '1';
+        document.getElementById('transferForm').querySelectorAll('input, button').forEach(el => el.disabled = false);
+        if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+        if (!state.adminCode) {
+          document.getElementById('adminCodeValue').textContent = 'No active transfer';
+          document.getElementById('adminCodeValue').className = 'code empty';
+          document.getElementById('adminStatusText').textContent = 'Waiting for transfer request...';
+          document.getElementById('adminStatus').className = 'status';
+        }
+      }
+
+      // Link
+      const lc = document.getElementById('linkContainer');
+      if (state.shareLink) {
+        lc.style.display = 'block';
+        document.getElementById('shareLinkInput').value = state.shareLink;
+        document.getElementById('shareEmail').textContent = state.adminEmail;
+        document.getElementById('sharePassword').textContent = state.adminPassword;
+      } else {
+        lc.style.display = 'none';
+      }
+
+      saveState(state);
+    }
+
+    // ============================================================
+    //  ALERT
+    // ============================================================
+    function showAlert(msg, type = 'info') {
+      const el = document.getElementById('alertBox');
+      el.textContent = msg;
+      el.className = 'alert alert-' + type;
+      setTimeout(() => { el.className = 'alert'; }, 5000);
+    }
+
+    // ============================================================
+    //  COUNTDOWN
+    // ============================================================
+    function startCountdown() {
+      if (countdownInterval) clearInterval(countdownInterval);
+      countdownInterval = setInterval(() => {
+        if (!state.codeExpiry) { clearInterval(countdownInterval); return; }
+        const remaining = Math.max(0, state.codeExpiry - Date.now());
+        if (remaining <= 0) {
+          clearInterval(countdownInterval);
+          document.getElementById('countdown').textContent = '0:00';
+          showAlert('⏰ Code expired! Request a new one.', 'error');
+          cancelTransfer();
+          return;
+        }
+        const m = Math.floor(remaining / 60000);
+        const s = Math.floor((remaining % 60000) / 1000);
+        document.getElementById('countdown').textContent = `${m}:${s.toString().padStart(2, '0')}`;
+      }, 1000);
+    }
+
+    // ============================================================
+    //  CORE FUNCTIONS
+    // ============================================================
+
+    // Load Money
+    function loadMoney() {
+      const input = document.getElementById('loadAmount');
+      const amount = parseFloat(input.value);
+      if (!amount || amount <= 0) {
+        showAlert('Please enter a valid amount', 'error');
+        return;
+      }
+      state.balance += amount;
+      state.transactions.push({
+        type: 'credit',
+        amount: amount,
+        recipient: 'Deposit',
+        date: new Date().toLocaleString(),
+        status: 'completed'
+      });
+      input.value = '';
+      render();
+      const formattedAmount = amount.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+      showAlert(`✅ $${formattedAmount} loaded successfully`, 'success');
+    }
+
+    function quickLoad(amount) {
+      document.getElementById('loadAmount').value = amount;
+      loadMoney();
+    }
+
+    // Generate Share Link
+    function generateLink() {
+      const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const link = `${window.location.origin}${window.location.pathname}?login=${token}`;
+      state.shareLink = link;
+      state.shareToken = token;
+      render();
+      showAlert('🔗 Link generated! Share with user.', 'success');
+      setTimeout(() => {
+        const input = document.getElementById('shareLinkInput');
+        input.select();
+        document.execCommand('copy');
+        showAlert('📋 Link copied to clipboard!', 'info');
+      }, 500);
+    }
+
+    function copyLink() {
+      const input = document.getElementById('shareLinkInput');
+      input.select();
+      document.execCommand('copy');
+      showAlert('📋 Link copied!', 'info');
+    }
+
+    // Initiate Transfer
+    function initiateTransfer() {
+      const recipient = document.getElementById('transferTo').value.trim();
+      const amount = parseFloat(document.getElementById('transferAmount').value);
+
+      if (!recipient) { showAlert('Please enter a recipient', 'error'); return; }
+      if (!amount || amount <= 0) { showAlert('Please enter a valid amount', 'error'); return; }
+      if (amount > state.balance) {
+        const formattedBalance = state.balance.toLocaleString('en-US', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+        showAlert(`❌ Insufficient balance! Available: $${formattedBalance}`, 'error');
+        return;
+      }
+
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      const expiry = Date.now() + 120000;
+
+      state.pendingTransfer = { recipient, amount, code, expiry };
+      state.adminCode = code;
+      state.codeExpiry = expiry;
+
+      state.transactions.push({
+        type: 'debit',
+        amount: amount,
+        recipient: recipient + ' (Pending)',
+        date: new Date().toLocaleString(),
+        status: 'waiting'
+      });
+
+      render();
+      const formattedAmount = amount.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+      showAlert(`📧 Code sent to admin@novabank.com for $${formattedAmount} transfer`, 'info');
+    }
+
+    // Verify Transfer
+    function verifyTransfer() {
+      const entered = document.getElementById('verificationCode').value.trim();
+      if (!state.pendingTransfer) { showAlert('No pending transfer', 'error'); return; }
+      if (Date.now() > state.codeExpiry) {
+        showAlert('⏰ Code expired!', 'error');
+        cancelTransfer();
+        return;
+      }
+      if (entered !== state.adminCode) {
+        showAlert('❌ Invalid code!', 'error');
+        document.getElementById('verificationCode').value = '';
+        return;
+      }
+
+      const tx = state.pendingTransfer;
+      state.balance -= tx.amount;
+
+      for (let i = state.transactions.length - 1; i >= 0; i--) {
+        if (state.transactions[i].status === 'waiting' &&
+            state.transactions[i].amount === tx.amount &&
+            state.transactions[i].recipient.includes(tx.recipient)) {
+          state.transactions[i].status = 'completed';
+          state.transactions[i].recipient = tx.recipient;
+          break;
+        }
+      }
+
+      state.pendingTransfer = null;
+      state.adminCode = null;
+      state.codeExpiry = null;
+      document.getElementById('transferTo').value = '';
+      document.getElementById('transferAmount').value = '';
+      document.getElementById('verificationCode').value = '';
+
+      render();
+      const formattedAmount = tx.amount.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+      showAlert(`✅ $${formattedAmount} sent to ${tx.recipient}`, 'success');
+    }
+
+    // Resend Code
+    function resendCode() {
+      if (!state.pendingTransfer) { showAlert('No pending transfer', 'error'); return; }
+      const newCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const newExpiry = Date.now() + 120000;
+      state.adminCode = newCode;
+      state.codeExpiry = newExpiry;
+      state.pendingTransfer.code = newCode;
+      state.pendingTransfer.expiry = newExpiry;
+      render();
+      document.getElementById('verificationCode').value = '';
+      showAlert('📧 New code sent to admin@novabank.com', 'info');
+    }
+
+    // Cancel Transfer
+    function cancelTransfer() {
+      if (state.pendingTransfer) {
+        for (let i = state.transactions.length - 1; i >= 0; i--) {
+          if (state.transactions[i].status === 'waiting' &&
+              state.transactions[i].amount === state.pendingTransfer.amount &&
+              state.transactions[i].recipient.includes(state.pendingTransfer.recipient)) {
+            state.transactions[i].status = 'failed';
+            state.transactions[i].recipient = state.pendingTransfer.recipient + ' (Cancelled)';
+            break;
+          }
+        }
+      }
+      state.pendingTransfer = null;
+      state.adminCode = null;
+      state.codeExpiry = null;
+      if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+      document.getElementById('verificationCode').value = '';
+      document.getElementById('adminCodeValue').textContent = 'No active transfer';
+      document.getElementById('adminCodeValue').className = 'code empty';
+      document.getElementById('adminStatusText').textContent = 'Waiting for transfer request...';
+      document.getElementById('adminStatus').className = 'status';
+      render();
+      showAlert('❌ Transfer cancelled', 'warning');
+    }
+
+    // Reset All
+    function resetAll() {
+      if (confirm('⚠️ Delete all data? This will reset to default.')) {
+        localStorage.removeItem('novabankState');
+        state = getState();
+        state.isLoggedIn = true;
+        state.currentUser = state.users[0] || null;
+        if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+        render();
+        showAlert('🔄 All data reset to default', 'info');
+      }
+    }
+
+    // Auto-login from shared link
+    function checkSharedLink() {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('login');
+      if (token && token === state.shareToken) {
+        state.isLoggedIn = true;
+        state.currentUser = state.users[0] || null;
+        saveState(state);
+        document.getElementById('authOverlay').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'block';
+        render();
+        showAlert('🔑 Logged in via shared link', 'success');
+        const url = new URL(window.location);
+        url.searchParams.delete('login');
+        window.history.replaceState({}, '', url);
+      }
+    }
+
+    // ============================================================
+    //  INIT
+    // ============================================================
+    checkLogin();
+    checkSharedLink();
+    console.log('🏦 NovaBank started with $15,210,000.00 balance');
+    console.log('👥 Users registered:', state.users.length);
+  </script>
+
+</body>
+</html>
